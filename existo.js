@@ -3,16 +3,9 @@ const matchMap = window.matchMap = new Map();
 const executedMap = window.executedMap = new WeakMap();
 
 function existo(selector, fn) {
-  console.log('existo', selector)
   const selectorActions = matchMap.get(selector) || new Set();
   matchMap.set(selector, selectorActions.add(fn));
   process();
-  // if (selectorMatch) {
-  //   selectorMatch.add(fn);
-  //   matchMap.set(selector, selectorMatch);
-  // } else {
-  //   matchMap.set(selector, [fn]);
-  // }
 }
 
 existo('p', (elem) => {
@@ -46,9 +39,9 @@ function process() {
   });
 }
 
-const obs = new MutationObserver((mutations, obsverver) => {
+const obs = new MutationObserver((mutations, observer) => {
   process();
-  obsverver.takeRecords();
+  observer.takeRecords();
 });
 
 obs.observe(document.body, {

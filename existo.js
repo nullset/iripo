@@ -15,6 +15,33 @@ function existo(selector, addFn, removeFn) {
   }
 }
 
+const existo2 = window.existo2 = {
+  onAdd: (selector, fn, opts = { process: true }) => {
+    const selectorActions = matchMap.get(selector) || new Set();
+    matchMap.set(selector, selectorActions.add(fn));
+    if (opts.process) processAdds();
+  },
+  onRemove: (selector, fn) => {
+    const removeSelectorActions = removeMatchMap.get(selector) || new Set();
+    removeMatchMap.set(selector, removeSelectorActions.add(fn));
+  },
+  clearFn: (elemMap, selector, fn) => {
+    const fns = elemMap.get(selector);
+    if (typeof fn === 'function') {
+      fns.delete(fn);
+    } else {
+      elemMap.set(selector, Array.from(fns).filter(matchFn => matchFn.toString() !== fn.toString()))
+    }
+
+  },
+  clearAdd: (selector, fn) => {
+    existo2.clearFn(matchMap, selector, fn);
+  },
+  clearRemove: (selector, fn) => {
+    existo2.clearFn(removeMatchMap, selector, fn);
+  }
+}
+
 // Object.defineProperty('remove')
 
 existo('p', (elem) => {
@@ -27,29 +54,9 @@ existo('p[data-time]', (elem) => {
   elem.dataset.foo = 'foo'
 })
 
-existo.remove = (selector, fn) => {
-  // matchMap.
-}
-
-// const existo2 = {
-//   add: (selector, fn) => {
-//     const selectorActions = matchMap.get(selector) || new Set();
-//     matchMap.set(selector, selectorActions.add(fn));
-//     processAdds();
-//   },
-//   remove: (selector, fn) => {
-//     debugger;
-//   }
-// }
-
-// existo2.add('p', (elem) => {
-//   elem.dataset.time = `existo2: ${Date()}`;
-// });
-// existo2.remove('p', (elem) => {
-//   console.log(`elem ${elem} was removed`);
-// });
-
-
+existo2.onAdd('p', (elem) => {
+  elem.dataset.num2 = 'blah';
+})
 
 
 function processAdds() {

@@ -1,5 +1,5 @@
 {
-  "name": "existo",
+  "name": "@nullset/existo",
   "version": "0.0.1",
   "description": "A mutation observer based livequery replacement.",
   "main": "src/index.js",

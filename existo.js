@@ -70,14 +70,19 @@ const existo = window.existo = {
   }
 }
 
-const obs = new MutationObserver((mutations, observer) => {
-  requestAnimationFrame(function () {
-    existo.processAdds();
-    existo.processRemoves(mutations);
-  })
-  observer.takeRecords();
+
+window.addEventListener('DOMContentLoaded', (event) => {
+  new MutationObserver((mutations, observer) => {
+    requestAnimationFrame(function () {
+      existo.processAdds();
+      existo.processRemoves(mutations);
+    })
+    observer.takeRecords();
+  }).observe(document.body, {
+    attributes: true, childList: true, subtree: true
+  });
 });
 
-obs.observe(document.body, {
-  attributes: true, childList: true, subtree: true
-})
+// existo.onAdd('p', (elem) => {
+//   elem.dataset.foo = 'bar';
+// })

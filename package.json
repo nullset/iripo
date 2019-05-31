@@ -1,0 +1,9 @@
+{
+  "name": "@nullset/existopub",
+  "version": "0.0.1",
+  "description": "A mutation observer based livequery replacement.",
+  "main": "src/index.js",
+  "repository": "git@github.com:nullset/existo.git",
+  "author": "Nathan Wright <nathan@brandalism.com>",
+  "license": "MIT"
+}

@@ -2,7 +2,7 @@ const matchMap = window.matchMap = new Map();
 const removeMatchMap = window.removeMatchMap = new Map();
 const executedMap = window.executedMap = new WeakMap();
 
-const existo = window.existo = {
+const existo = {
   onAdd: function onAdd(selector, fn, opts = { processNow: true }) {
     const selectorActions = matchMap.get(selector) || new Set();
     matchMap.set(selector, selectorActions.add(fn));
@@ -82,6 +82,8 @@ window.addEventListener('DOMContentLoaded', (event) => {
     attributes: true, childList: true, subtree: true
   });
 });
+
+// export default existo;
 
 // existo.onAdd('p', (elem) => {
 //   elem.dataset.foo = 'bar';

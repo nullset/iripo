@@ -18,7 +18,7 @@
     paragraph</button>
   <button type="button" onclick="document.querySelector('p').remove();">Remove paragraph</button>
   <script>
-    iripo.in('p', function (elem) {
+    const blah = iripo.in('p', function (elem) {
       elem.dataset.foo = 'bar';
     })
     iripo.in('p', function (elem) {

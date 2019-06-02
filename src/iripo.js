@@ -2,11 +2,15 @@ const inFns = (window.inFns = new Map());
 const outFns = (window.outFns = new Map());
 const processedInFns = (window.processedInFns = new WeakMap());
 
-let fnIdCounter = 0;
 const allFns = new Map();
 
 const iripo = {
   counter: 0,
+  // inFns: new Map(),
+  // outFns: new Map(),
+  // processInFns: new WeakMap();
+  // allFns: new Map(),
+
   getFnId: function getFnId(fn) {
     const match = Array.from(allFns.entries()).find(function (entry) {
       if (fn.toString() === entry[1].toString()) {
@@ -18,43 +22,53 @@ const iripo = {
   getFn: function getFn(id) {
     return allFns.get(id);
   },
-  setAction: function getOrCreateFn(selector, fn, typeFns) {
+  setAction: function setAction(selector, fn, typeFns) {
     const actions = typeFns.get(selector) || new Set();
 
     let fnId = iripo.getFnId(fn);
 
     if (!fnId) {
-      iripo.counter++;
-      fnId = iripo.counter;
+      fnId = Symbol(iripo.counter);
       allFns.set(fnId, fn);
+      typeFns.set(selector, actions.add(fnId));
+      iripo.counter++;
     }
-
-    typeFns.set(selector, actions.add(fnId));
+    return fnId;
   },
   in: function inFn(selector, fn, opts = { processNow: true }) {
-    iripo.setAction(selector, fn, inFns);
+    const id = iripo.setAction(selector, fn, inFns);
     if (opts.processNow) iripo.processInFns();
+    return id;
   },
   out: function outFn(selector, fn) {
-    iripo.setAction(selector, fn, outFns);
+    return iripo.setAction(selector, fn, outFns);
   },
-  clearFn: function clearFn(elemMap, selector, fn) {
-    const fns = elemMap.get(selector);
-    if (typeof fn === "function") {
-      fns.delete(fn);
-    } else {
-      elemMap.set(
-        selector,
-        Array.from(fns).filter(matchFn => matchFn.toString() !== fn.toString())
-      );
-    }
+  // clearFn: function clearFn(typeFns, selector, fn) {
+  //   const fns = typeFns.get(selector);
+  //   if (typeof fn === "function") {
+  //     fns.delete(fn);
+  //   } else {
+  //     elemMap.set(
+  //       selector,
+  //       Array.from(fns).filter(matchFn => matchFn.toString() !== fn.toString())
+  //     );
+  //   }
+  // },
+  clear: function removeInFn(symbol) {
+    // iripo.clearFn(symbol);
+    allFns.delete(symbol);
+    [inFns, outFns].forEach(function (typeFns) {
+      typeFns.forEach(function (actions) {
+        actions.delete(symbol);
+      });
+    });
   },
-  removeIn: function removeInFn(selector, fn) {
-    iripo.clearFn(inFns, selector, fn);
+  pause: function pause(symbol) {
+
   },
-  removeOut: function removeOutFn(selector, fn) {
-    iripo.clearFn(outFns, selector, fn);
-  },
+  // removeIn: function removeInFn(selector, fn) {
+  //   iripo.clearFn(inFns, selector, fn);
+  // },
   processInFns: function processInFns() {
     console.log("process");
     if (inFns.size > 0) {

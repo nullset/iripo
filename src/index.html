@@ -2,20 +2,40 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <script src="./iripo.js"></script>
 </head>
 
 <body>
-    <p>oh my</p>
+  <p>oh my</p>
+  <div id="more"></div>
 
-    <button type="button"
-        onclick="var p = document.createElement('p'); p.textContent = '1234'; document.body.appendChild(p)">Add
-        paragraph</button>
-    <button type="button" onclick="document.querySelector('p').remove();">Remove paragraph</button>
-    <script src="./iripo.js"></script>
+  <button type="button"
+    onclick="var p = document.createElement('p'); p.textContent = '1234'; document.getElementById('more').appendChild(p)">Add
+    paragraph</button>
+  <button type="button" onclick="document.querySelector('p').remove();">Remove paragraph</button>
+  <script>
+    iripo.in('p', function (elem) {
+      elem.dataset.foo = 'bar';
+    })
+    iripo.in('p', function (elem) {
+      elem.dataset.time = Date.now();
+    })
+    iripo.out('p', function (elem) {
+      console.log(elem, 'has been removed');
+    })
+    iripo.in('p', function (elem) {
+      elem.dataset.time = Date.now();
+    })
+    iripo.in('p', function (elem) {
+      elem.onclick = function () {
+        alert();
+      }
+    })
+  </script>
 </body>
 
 </html>

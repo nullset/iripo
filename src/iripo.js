@@ -3,6 +3,7 @@ const outFns = (window.outFns = new Map());
 const processedInFns = (window.processedInFns = new WeakMap());
 
 const allFns = new Map();
+const pausedFns = new Map();
 
 const iripo = {
   counter: 0,
@@ -57,6 +58,7 @@ const iripo = {
   clear: function removeInFn(symbol) {
     // iripo.clearFn(symbol);
     allFns.delete(symbol);
+    pausedFns.delete(symbol);
     [inFns, outFns].forEach(function (typeFns) {
       typeFns.forEach(function (actions) {
         actions.delete(symbol);
@@ -64,11 +66,25 @@ const iripo = {
     });
   },
   pause: function pause(symbol) {
-
+    pausedFns.set(symbol, true);
+    return symbol;
   },
-  // removeIn: function removeInFn(selector, fn) {
-  //   iripo.clearFn(inFns, selector, fn);
-  // },
+  pauseAll: function pauseAll() {
+    allFns.forEach(function (fn, symbol) {
+      iripo.pause(symbol);
+    });
+  },
+  resume: function resume(symbol, processNow = true) {
+    pausedFns.delete(symbol);
+    if (processNow) iripo.processInFns();
+    return symbol;
+  },
+  resumeAll: function resumeAll() {
+    allFns.forEach(function (fn, symbol) {
+      iripo.resume(symbol, false);
+    });
+    iripo.processInFns();
+  },
   processInFns: function processInFns() {
     console.log("process");
     if (inFns.size > 0) {
@@ -77,12 +93,14 @@ const iripo = {
         inFns.forEach(function (fnIds, selector) {
           if (elem.matches(selector)) {
             fnIds.forEach(function (id) {
-              const processedInActions = processedInFns.get(elem);
-              if (!processedInActions || !processedInActions.has(id)) {
-                const fn = iripo.getFn(id);
-                const set = processedInActions || new Set();
-                processedInFns.set(elem, set.add(id));
-                fn(elem);
+              if (!pausedFns.get(id)) {
+                const processedInActions = processedInFns.get(elem);
+                if (!processedInActions || !processedInActions.has(id)) {
+                  const fn = iripo.getFn(id);
+                  const set = processedInActions || new Set();
+                  processedInFns.set(elem, set.add(id));
+                  fn(elem);
+                }
               }
             });
           }
@@ -106,8 +124,10 @@ const iripo = {
                 });
                 matchingNodes.forEach(function (node) {
                   fnIds.forEach(function (id) {
-                    const fn = iripo.getFn(id);
-                    fn(node);
+                    if (!pausedFns.get(id)) {
+                      const fn = iripo.getFn(id);
+                      fn(node);
+                    }
                   });
                 });
               }

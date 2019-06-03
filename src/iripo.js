@@ -1,4 +1,4 @@
-const iripo = {
+const iripo = (window.iripo = {
   counter: 0,
   allFns: new Map(),
   pausedFns: new Map(),
@@ -7,7 +7,7 @@ const iripo = {
   processedElems: new WeakMap(),
 
   getSymbol: function getSymbol(fn) {
-    const match = Array.from(iripo.allFns.entries()).find(function (entry) {
+    const match = Array.from(iripo.allFns.entries()).find(function(entry) {
       if (fn.toString() === entry[1].toString()) {
         return true;
       }
@@ -41,8 +41,8 @@ const iripo = {
   clear: function removeInFn(symbol) {
     iripo.allFns.delete(symbol);
     iripo.pausedFns.delete(symbol);
-    [iripo.inWatchers, iripo.outWatchers].forEach(function (typeFns) {
-      typeFns.forEach(function (actions) {
+    [iripo.inWatchers, iripo.outWatchers].forEach(function(typeFns) {
+      typeFns.forEach(function(actions) {
         actions.delete(symbol);
       });
     });
@@ -52,7 +52,7 @@ const iripo = {
     return symbol;
   },
   pauseAll: function pauseAll() {
-    iripo.allFns.forEach(function (fn, symbol) {
+    iripo.allFns.forEach(function(fn, symbol) {
       iripo.pause(symbol);
     });
   },
@@ -62,7 +62,7 @@ const iripo = {
     return symbol;
   },
   resumeAll: function resumeAll() {
-    iripo.allFns.forEach(function (fn, symbol) {
+    iripo.allFns.forEach(function(fn, symbol) {
       iripo.resume(symbol, false);
     });
     iripo.processInFns();
@@ -71,10 +71,10 @@ const iripo = {
     console.log("process");
     if (iripo.inWatchers.size > 0) {
       const allSelectors = Array.from(iripo.inWatchers.keys()).join(",");
-      document.querySelectorAll(allSelectors).forEach(function (elem) {
-        iripo.inWatchers.forEach(function (fnIds, selector) {
+      document.querySelectorAll(allSelectors).forEach(function(elem) {
+        iripo.inWatchers.forEach(function(fnIds, selector) {
           if (elem.matches(selector)) {
-            fnIds.forEach(function (symbol) {
+            fnIds.forEach(function(symbol) {
               if (!iripo.pausedFns.get(symbol)) {
                 const processedInActions = iripo.processedElems.get(elem);
                 if (!processedInActions || !processedInActions.has(symbol)) {
@@ -92,20 +92,20 @@ const iripo = {
   },
   processOutFns: function processOutFns(mutations) {
     if (iripo.outWatchers.size > 0) {
-      mutations.forEach(function (mutation) {
+      mutations.forEach(function(mutation) {
         if (mutation.removedNodes.length > 0) {
-          iripo.outWatchers.forEach(function (fnIds, selector) {
-            Array.from(mutation.removedNodes).forEach(function (node) {
+          iripo.outWatchers.forEach(function(fnIds, selector) {
+            Array.from(mutation.removedNodes).forEach(function(node) {
               if (node.nodeType === 1) {
                 const matchingNodes = new Set();
                 if (node.matches(selector)) matchingNodes.add(node);
-                Array.from(node.querySelectorAll(selector)).forEach(function (
+                Array.from(node.querySelectorAll(selector)).forEach(function(
                   childNode
                 ) {
                   matchingNodes.add(childNode);
                 });
-                matchingNodes.forEach(function (node) {
-                  fnIds.forEach(function (symbol) {
+                matchingNodes.forEach(function(node) {
+                  fnIds.forEach(function(symbol) {
                     if (!iripo.pausedFns.get(symbol)) {
                       const fn = iripo.getFn(symbol);
                       fn(node);
@@ -119,7 +119,7 @@ const iripo = {
       });
     }
   }
-};
+});
 
 window.addEventListener("DOMContentLoaded", event => {
   function runIripo(mutations, observer) {

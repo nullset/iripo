@@ -1,6 +1,6 @@
 {
   "name": "iripo",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A mutation observer based livequery replacement.",
   "main": "src/iripo.js",
   "repository": "git@github.com:nullset/existo.git",

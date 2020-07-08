@@ -135,9 +135,12 @@ window.addEventListener('DOMContentLoaded', (event) => {
     iripo.processOutFns(mutations);
   }
 
-  new MutationObserver(runIripo).observe(document.body, {
-    attributes: true,
-    childList: true,
-    subtree: true,
-  });
+  new MutationObserver(runIripo).observe(
+    document.documentElement || document.body,
+    {
+      attributes: true,
+      childList: true,
+      subtree: true,
+    }
+  );
 });

@@ -1,6 +1,6 @@
 # Iripo
 
-A jquery livequery replacement, built with all the hearty goodness and performance of MutationObserver. Any change to the <html> element or any children (<head>, <body>, or child elements within those nodes) will trigger Iripo. Iripo will only run callback functions when matching elements have appeared or disappeared from the page, and only run when the browser is idle, so as to increase performance.
+A jquery livequery replacement, built with all the hearty goodness and performance of MutationObserver. Any change to the `<html>` element or any children (`<head>`, `<body>`, or child elements within those nodes) will trigger Iripo. Iripo will only run callback functions when matching elements have appeared or disappeared from the page, and only run when the browser is idle, so as to increase performance.
 
 **NOTE:** Iripo will intentionally _not_ run when text has been changed on the page, only when actual DOM nodes have been altered.
 
@@ -74,7 +74,7 @@ A jquery livequery replacement, built with all the hearty goodness and performan
 
 ## Options
 
-By default Iripo will ignore any changes which take place in a page's <head>. You can easily change this to observe changes here as well by setting:
+By default Iripo will ignore any changes which take place in a page's `<head>`. You can easily change this to observe changes here as well by setting:
 
 ```javascript
 iripo.ignoreMutationsInHead = false;
@@ -82,4 +82,4 @@ iripo.ignoreMutationsInHead = false;
 
 ## What's up with the name "Iripo"?
 
-My wife is from Zimbabwe, and the language spoken by most of the country is Shona. Depending on the context, the word _iripo_ can mean "is it there?" or "there it is", which seemed like an appropriate name for a library that detects if something exists.
+My wife is from Zimbabwe, and the language spoken by most of the country is Shona. Depending on the context, the word _iripo_ can mean "is it there?" or "there it is", which seemed like an appropriate name for a library that detects and reacts to something if it exists.

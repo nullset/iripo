@@ -1,10 +1,13 @@
 const iripo = (window.iripo = {
   counter: 0,
+  paused: false, // All mutation functions have been paused at a system level, vs at a function level.
   allFns: new Map(),
   pausedFns: new Map(),
   inWatchers: new Map(),
   outWatchers: new Map(),
   processedElems: new WeakMap(),
+  processingQueued: false,
+  ignoreMutationsInHead: true,
 
   getSymbol: function getSymbol(fn) {
     const match = Array.from(iripo.allFns.entries()).find(function (entry) {
@@ -34,7 +37,7 @@ const iripo = (window.iripo = {
     selector,
     fn,
     opts = {
-      processNow: true,
+      processNow: false,
     }
   ) {
     const id = iripo.setAction(selector, fn, iripo.inWatchers);
@@ -59,23 +62,36 @@ const iripo = (window.iripo = {
     return symbol;
   },
   pauseAll: function pauseAll() {
+    this.paused = true;
     iripo.allFns.forEach(function (fn, symbol) {
       iripo.pause(symbol);
     });
   },
   resume: function resume(symbol, processNow = true) {
+    this.paused = false;
     iripo.pausedFns.delete(symbol);
     if (processNow) iripo.processInFns();
 
     return symbol;
   },
   resumeAll: function resumeAll() {
+    this.paused = false;
     iripo.allFns.forEach(function (fn, symbol) {
       iripo.resume(symbol, false);
     });
     iripo.processInFns();
   },
-  processInFns: function processInFns() {
+  allMutationsAreInHead: function allMutationsAreInHead(mutations) {
+    if (
+      this.ignoreMutationsInHead &&
+      mutations &&
+      mutations.every((m) => m.target.tagName === 'HEAD')
+    )
+      return true;
+  },
+  processInFns: function processInFns(mutations) {
+    if (this.allMutationsAreInHead(mutations)) return;
+
     if (iripo.inWatchers.size > 0) {
       const allSelectors = Array.from(iripo.inWatchers.keys()).join(',');
       document.querySelectorAll(allSelectors).forEach(function (elem) {
@@ -98,6 +114,8 @@ const iripo = (window.iripo = {
     }
   },
   processOutFns: function processOutFns(mutations) {
+    if (this.allMutationsAreInHead(mutations)) return;
+
     if (iripo.outWatchers.size > 0) {
       mutations.forEach(function (mutation) {
         if (mutation.removedNodes.length > 0) {
@@ -130,12 +148,22 @@ const iripo = (window.iripo = {
 });
 
 window.addEventListener('DOMContentLoaded', (event) => {
-  function runIripo(mutations, observer) {
-    iripo.processInFns();
-    iripo.processOutFns(mutations);
+  // Run any initial `in` calls.
+  if (!iripo.paused) iripo.processInFns();
+
+  // Watch the page for any mutations. If they occur, requset that the browser run mutations during the next idle period.
+  // If the idle period has not yet happened, do nothing, as all mutation functions run once the browser is idle.
+  function watchMutations(mutations, observer) {
+    if (iripo.paused || iripo.processingQueued) return;
+    iripo.processingQueued = true;
+    requestIdleCallback(() => {
+      iripo.processInFns(mutations);
+      iripo.processOutFns(mutations);
+      iripo.processingQueued = false;
+    });
   }
 
-  new MutationObserver(runIripo).observe(
+  new MutationObserver(watchMutations).observe(
     document.documentElement || document.body,
     {
       attributes: true,

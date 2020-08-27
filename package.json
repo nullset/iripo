@@ -10,8 +10,5 @@
     "build-docs": "parcel build docs-src/index.html -d docs",
     "watch-docs": "parcel docs-src/index.html -d docs --open"
   },
-  "devDependencies": {
-    "cssnano": "^4.1.10",
-    "sass": "^1.20.3"
-  }
+  "devDependencies": {}
 }

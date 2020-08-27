@@ -32,7 +32,7 @@ A jquery livequery replacement, built with all the hearty goodness and performan
    );
    ```
 
-   This callback will immediately execute against any matching element, without waiting for any new elements to appear. It will also listen for new matching elements and run again once any matching element is found.
+   This callback will immediately execute against any matching element, without waiting for any new elements to appear. It will also listen for new matching elements and run again once any new matching element is found.
 
 3. Run a callback function when a matching element is removed from the page: (can use any native javascript selector)
 

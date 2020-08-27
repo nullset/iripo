@@ -85,7 +85,9 @@ const iripo = (window.iripo = {
     if (
       this.ignoreMutationsInHead &&
       mutations &&
-      mutations.every((m) => m.target.tagName === 'HEAD')
+      mutations.every(function (m) {
+        return m.target.tagName === 'HEAD';
+      })
     )
       return true;
   },
@@ -147,7 +149,9 @@ const iripo = (window.iripo = {
   },
 });
 
-window.addEventListener('DOMContentLoaded', (event) => {
+window.addEventListener('DOMContentLoaded', function handleDOMContentLoaded(
+  event
+) {
   // Run any initial `in` calls.
   if (!iripo.paused) iripo.processInFns();
 
@@ -156,7 +160,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
   function watchMutations(mutations, observer) {
     if (iripo.paused || iripo.processingQueued) return;
     iripo.processingQueued = true;
-    requestIdleCallback(() => {
+    requestIdleCallback(function handleRequestIdleCallback() {
       iripo.processInFns(mutations);
       iripo.processOutFns(mutations);
       iripo.processingQueued = false;

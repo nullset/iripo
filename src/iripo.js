@@ -1,3 +1,5 @@
+import 'requestidlecallback-polyfill';
+
 const iripo = (window.iripo = {
   counter: 0,
   paused: false, // All mutation functions have been paused at a system level, vs at a function level.
@@ -160,11 +162,17 @@ window.addEventListener('DOMContentLoaded', function handleDOMContentLoaded(
   function watchMutations(mutations, observer) {
     if (iripo.paused || iripo.processingQueued) return;
     iripo.processingQueued = true;
-    requestIdleCallback(function handleRequestIdleCallback() {
-      iripo.processInFns(mutations);
-      iripo.processOutFns(mutations);
-      iripo.processingQueued = false;
-    });
+
+    // Have to use polyfill for Safari since it does not support `requestIdleCallback` natively.
+    // FIXME: Once it does, remove the second option specifying the timeout.
+    requestIdleCallback(
+      function handleRequestIdleCallback() {
+        iripo.processInFns(mutations);
+        iripo.processOutFns(mutations);
+        iripo.processingQueued = false;
+      },
+      { timeout: 1000 }
+    );
   }
 
   new MutationObserver(watchMutations).observe(

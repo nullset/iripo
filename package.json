@@ -10,5 +10,8 @@
     "build-docs": "parcel build docs-src/index.html -d docs",
     "watch-docs": "parcel docs-src/index.html -d docs --open"
   },
-  "devDependencies": {}
+  "devDependencies": {},
+  "dependencies": {
+    "requestidlecallback-polyfill": "^1.0.2"
+  }
 }

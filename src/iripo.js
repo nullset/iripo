@@ -1,6 +1,6 @@
-import 'requestidlecallback-polyfill';
+import 'requestidlecallback-polyfill'; // NOTE: Required for Safari and IE11 support.
 
-const iripo = (window.iripo = {
+export default iripo = window.iripo = {
   counter: 0,
   paused: false, // All mutation functions have been paused at a system level, vs at a function level.
   allFns: new Map(),
@@ -124,7 +124,7 @@ const iripo = (window.iripo = {
       mutations.forEach(function (mutation) {
         if (mutation.removedNodes.length > 0) {
           iripo.outWatchers.forEach(function (fnIds, selector) {
-            Array.from(mutation.removedNodes).forEach(function (node) {
+            mutation.removedNodes.forEach(function (node) {
               if (node.nodeType === 1) {
                 const matchingNodes = new Set();
                 if (node.matches(selector)) matchingNodes.add(node);
@@ -149,7 +149,7 @@ const iripo = (window.iripo = {
       });
     }
   },
-});
+};
 
 window.addEventListener('DOMContentLoaded', function handleDOMContentLoaded(
   event

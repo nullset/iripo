@@ -13,5 +13,8 @@
   "devDependencies": {},
   "dependencies": {
     "requestidlecallback-polyfill": "^1.0.2"
+  },
+  "peerDependencies": {
+    "core-js": "^3.6.5"
   }
 }

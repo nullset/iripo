@@ -1,6 +1,6 @@
 import 'requestidlecallback-polyfill'; // NOTE: Required for Safari and IE11 support.
 
-export default iripo = window.iripo = {
+const iripo = (window.iripo = {
   counter: 0,
   paused: false, // All mutation functions have been paused at a system level, vs at a function level.
   allFns: new Map(),
@@ -35,15 +35,9 @@ export default iripo = window.iripo = {
     }
     return fnId;
   },
-  in: function inFn(
-    selector,
-    fn,
-    opts = {
-      processNow: false,
-    }
-  ) {
+  in: function inFn(selector, fn, processNow) {
     const id = iripo.setAction(selector, fn, iripo.inWatchers);
-    if (opts.processNow) iripo.processInFns();
+    if (processNow) iripo.processInFns();
 
     return id;
   },
@@ -69,7 +63,8 @@ export default iripo = window.iripo = {
       iripo.pause(symbol);
     });
   },
-  resume: function resume(symbol, processNow = true) {
+  resume: function resume(symbol, processNow) {
+    if (typeof processNow === 'undefined') processNow = true;
     this.paused = false;
     iripo.pausedFns.delete(symbol);
     if (processNow) iripo.processInFns();
@@ -149,7 +144,7 @@ export default iripo = window.iripo = {
       });
     }
   },
-};
+});
 
 window.addEventListener('DOMContentLoaded', function handleDOMContentLoaded(
   event
@@ -159,7 +154,7 @@ window.addEventListener('DOMContentLoaded', function handleDOMContentLoaded(
 
   // Watch the page for any mutations. If they occur, requset that the browser run mutations during the next idle period.
   // If the idle period has not yet happened, do nothing, as all mutation functions run once the browser is idle.
-  function watchMutations(mutations, observer) {
+  function watchMutations(mutations) {
     if (iripo.paused || iripo.processingQueued) return;
     iripo.processingQueued = true;
 

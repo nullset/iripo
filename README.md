@@ -26,9 +26,7 @@ A jquery livequery replacement, built with all the hearty goodness and performan
      (element) => {
        console.log('my element', element);
      },
-     {
-       processNow: true,
-     }
+     true // Process the callback immediately after instantiation
    );
    ```
 
@@ -79,6 +77,12 @@ By default Iripo will ignore any changes which take place in a page's `<head>`. 
 ```javascript
 iripo.ignoreMutationsInHead = false;
 ```
+
+## Browser support
+
+Iripo works with all modern browsers (Chrome, Firefox, Chromium-based Edge, Opera, Vivaldi, Safari).
+
+Iripo can easily be made to work with Internet Explorer 11 by including [core-js](https://github.com/zloirock/core-js).
 
 ## What's up with the name "Iripo"?
 

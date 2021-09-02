@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+    <script type="module" src="/src/index.js"></script>
+  </head>
+  <body>
+    <button
+      type="button"
+      onclick="var p = document.createElement('p'); p.textContent = '1234'; document.getElementById('more').appendChild(p)"
+    >
+      Add paragraph
+    </button>
+    <button
+      type="button"
+      onclick="var p = document.querySelector('p'); p.parentElement.removeChild(p);"
+    >
+      Remove paragraph
+    </button>
+    <button type="button" onclick="addNested()">Add nested button</button>
+
+    <p>oh my</p>
+    <div id="more"></div>
+
+    <script>
+      window.addEventListener("DOMContentLoaded", (event) => {
+        function addNested() {
+          const div = document.createElement("div");
+          const p = document.createElement("p");
+          const button = document.createElement("button");
+          button.textContent = "A new button";
+          button.dataset.button = "blah blah";
+
+          p.appendChild(button);
+          div.appendChild(p);
+          document.body.appendChild(div);
+        }
+        const blah = iripo.in("p", function (elem) {
+          elem.dataset.foo = "bar";
+        });
+        iripo.in("p", function (elem) {
+          elem.dataset.time = Date.now();
+          console.log(elem, "has been added");
+        });
+        iripo.out("p", function (elem) {
+          console.log(elem, "has been removed");
+        });
+        iripo.in("p", function (elem) {
+          elem.dataset.time = Date.now();
+        });
+        iripo.in("p", function (elem) {
+          elem.onclick = function () {
+            alert(1);
+          };
+        });
+        iripo.in("[data-button]", function (elem) {
+          console.log(elem, "has been added");
+        });
+
+        window.addNested = addNested;
+      });
+    </script>
+  </body>
+</html>

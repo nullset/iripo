@@ -1,0 +1,26 @@
+{
+  "name": "iripo",
+  "version": "0.1.12",
+  "description": "A mutation observer based livequery replacement.",
+  "main": "src/iripo.js",
+  "repository": "git@github.com:nullset/iripo.git",
+  "author": "Nathan Wright <nathan@brandalism.com>",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^2.5.2"
+  },
+  "dependencies": {
+    "requestidlecallback-polyfill": "^1.0.2"
+  },
+  "keywords": [
+    "jquery",
+    "mutation",
+    "observer",
+    "livequery"
+  ]
+}

@@ -2,7 +2,17 @@
   "name": "iripo",
   "version": "0.1.12",
   "description": "A mutation observer based livequery replacement.",
-  "main": "src/iripo.js",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/iripo.umd.js",
+  "module": "./dist/iripo.es.js",
+  "exports": {
+    ".": {
+      "import": "./dist/iripo.es.js",
+      "require": "./dist/iripo.umd.js"
+    }
+  },
   "repository": "git@github.com:nullset/iripo.git",
   "author": "Nathan Wright <nathan@brandalism.com>",
   "license": "MIT",

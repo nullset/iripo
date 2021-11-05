@@ -13,8 +13,8 @@ A jquery livequery replacement, built with all the hearty goodness and performan
 2. Run a callback function when a matching element is added to the page: (can use any native javascript selector)
 
    ```javascript
-   iripo.in('p.my-class', (element) => {
-     console.log('my element', element);
+   iripo.in("p.my-class", (element) => {
+     console.log("my element", element);
    });
    ```
 
@@ -24,9 +24,9 @@ A jquery livequery replacement, built with all the hearty goodness and performan
 
    ```javascript
    iripo.in(
-     'p.my-class',
+     "p.my-class",
      (element) => {
-       console.log('my element', element);
+       console.log("my element", element);
      },
      true // Process the callback immediately after instantiation
    );
@@ -37,8 +37,8 @@ A jquery livequery replacement, built with all the hearty goodness and performan
 3. Run a callback function when a matching element is removed from the page: (can use any native javascript selector)
 
    ```javascript
-   iripo.out('button#some-id', (element) => {
-     console.log('my element', element);
+   iripo.out("button#some-id", (element) => {
+     console.log("my element", element);
    });
    ```
 
@@ -51,7 +51,7 @@ A jquery livequery replacement, built with all the hearty goodness and performan
    or just pause a specific one by calling `pause` and passing in a specific selector:
 
    ```javascript
-   iripo.pause('button.my-class');
+   iripo.pause("button.my-class");
    ```
 
 5. Resume all callback functions:
@@ -63,13 +63,13 @@ A jquery livequery replacement, built with all the hearty goodness and performan
    or just resume a specific one by calling `resume` and passing in a specific selector:
 
    ```javascript
-   iripo.resume('button');
+   iripo.resume("button");
    ```
 
 6. Clear a callback function to prevent it from ever running again:
 
    ```javascript
-   iripo.clear('button');
+   iripo.clear("button");
    ```
 
 ## Options
@@ -88,4 +88,4 @@ Iripo can easily be made to work with Internet Explorer 11 by including [core-js
 
 ## What's up with the name "Iripo"?
 
-My wife is from Zimbabwe, and the language spoken by most of the country is Shona. Depending on the context, the word _iripo_ (pronounced "ee-ree-po") can mean "is it there?" or "there it is", which seemed like an appropriate name for a library that detects and reacts to something if it exists.
+It is a Shona word. Depending on the context, the word _iripo_ (pronounced "ee-ree-po") can mean "is it there?" or "there it is", which seemed like an appropriate name for a library that detects and reacts to something if it exists.

@@ -90,4 +90,4 @@ Iripo can easily be made to work with Internet Explorer 11 by including [core-js
 
 ## What's up with the name "Iripo"?
 
-My wife is from Zimbabwe, and the language spoken by most of the country is Shona. Depending on the context, the word _iripo_ (pronounced "ee-ree-po") can mean "is it there?" or "there it is", which seemed like an appropriate name for a library that detects and reacts to something if it exists.
+"Iripo" is a word from the Shona language. Depending on the context, the word _iripo_ (pronounced "ee-ree-po") can mean "is it there?" or "there it is", which seemed like an appropriate name for a library that detects and reacts to something if it exists.

@@ -59,6 +59,15 @@
         iripo.in("[data-button]", function (elem) {
           console.log(elem, "has been added");
         });
+        iripo.in(".foo", function (elem) {
+          console.log(elem, "FOO class added");
+        });
+        iripo.out("#more", function (elem) {
+          console.log("MORE removed");
+        });
+        iripo.out(".foo", function (elem) {
+          console.log("FOO class removed", elem);
+        });
 
         window.addNested = addNested;
       });

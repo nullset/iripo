@@ -1,5 +1,21 @@
 import "requestidlecallback-polyfill"; // NOTE: Required for Safari and IE11 support.
 
+function runFns({ fnIds, iripo, node }) {
+  fnIds.forEach(function (symbol) {
+    if (!iripo.pausedFns.get(symbol)) {
+      const fn = iripo.getFn(symbol);
+      fn(node);
+    }
+  });
+}
+
+const observerOptions = {
+  attributes: true,
+  attributeOldValue: true,
+  childList: true,
+  subtree: true,
+};
+
 const iripo = (window.iripo = {
   paused: false, // All mutation functions have been paused at a system level, vs at a function level.
   allFns: new Map(),
@@ -110,12 +126,66 @@ const iripo = (window.iripo = {
       });
     }
   },
-  processOutFns: function processOutFns(mutations) {
+  processOutFns: function processOutFns(mutations, observer) {
+    // debugger;
     if (this.allMutationsAreInHead(mutations)) return;
 
     if (iripo.outWatchers.size > 0) {
+      // mutations.forEach(function (mutation) {
+      //   if (mutation.removedNodes.length > 0) {
+      //     iripo.outWatchers.forEach(function (fnIds, selector) {
+      //       mutation.removedNodes.forEach(function (node) {
+      //         if (node.nodeType === 1) {
+      //           const matchingNodes = new Set();
+      //           if (node.matches(selector)) matchingNodes.add(node);
+
+      //           Array.from(node.querySelectorAll(selector)).forEach(function (
+      //             childNode
+      //           ) {
+      //             matchingNodes.add(childNode);
+      //           });
+      //           matchingNodes.forEach(function (node) {
+      //             fnIds.forEach(function (symbol) {
+      //               if (!iripo.pausedFns.get(symbol)) {
+      //                 const fn = iripo.getFn(symbol);
+      //                 fn(node);
+      //               }
+      //             });
+      //           });
+      //         }
+      //       });
+      //     });
+      //   }
+      // });
+
       mutations.forEach(function (mutation) {
-        if (mutation.removedNodes.length > 0) {
+        // debugger;
+
+        if (mutation.type === "attributes") {
+          const node = mutation.target;
+          const currentValue = node.getAttribute([mutation.attributeName]);
+
+          // Pause observer.
+          observer.disconnect();
+          if (mutation.oldValue != null) {
+            // Temorarily set node back to old attribute value, to see if it used to match a selector.
+            node.setAttribute(mutation.attributeName, mutation.oldValue);
+            iripo.outWatchers.forEach(function (fnIds, selector) {
+              if (node.matches(selector)) {
+                runFns({ fnIds, iripo, node });
+              }
+            });
+
+            if (currentValue != null)
+              node.setAttribute(mutation.attributeName, currentValue);
+          }
+
+          // Restart observer.
+          observer.observe(
+            document.documentElement || document.body,
+            observerOptions
+          );
+        } else if (mutation.removedNodes.length > 0) {
           iripo.outWatchers.forEach(function (fnIds, selector) {
             mutation.removedNodes.forEach(function (node) {
               if (node.nodeType === 1) {
@@ -152,15 +222,15 @@ window.addEventListener(
 
     // Watch the page for any mutations. If they occur, requset that the browser run mutations during the next idle period.
     // If the idle period has not yet happened, do nothing, as all mutation functions run once the browser is idle.
-    function watchMutations(mutations) {
+    function watchMutations(mutations, observer) {
       if (iripo.paused || iripo.processingQueued) return;
       iripo.processingQueued = true;
 
       // Have to use polyfill for Safari since it does not support `requestIdleCallback` natively.
       requestIdleCallback(
         function handleRequestIdleCallback() {
-          iripo.processInFns(mutations);
-          iripo.processOutFns(mutations);
+          iripo.processInFns(mutations, observer);
+          iripo.processOutFns(mutations, observer);
           iripo.processingQueued = false;
         },
         { timeout: 1000 }
@@ -169,11 +239,7 @@ window.addEventListener(
 
     new MutationObserver(watchMutations).observe(
       document.documentElement || document.body,
-      {
-        attributes: true,
-        childList: true,
-        subtree: true,
-      }
+      observerOptions
     );
   }
 );

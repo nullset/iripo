@@ -10,6 +10,8 @@ const iripo = (window.iripo = {
   processingQueued: false,
   ignoreMutationsInHead: true,
 
+  inMatchedElems: new Set(),
+
   getSymbol: function getSymbol(fn) {
     const match = Array.from(iripo.allFns.entries()).find(function (entry) {
       if (fn.toString() === entry[1].toString()) {
@@ -101,6 +103,15 @@ const iripo = (window.iripo = {
                   const fn = iripo.getFn(symbol);
                   const set = processedInActions || new Set();
                   iripo.processedElems.set(elem, set.add(symbol));
+
+                  iripo.inMatchedElems.add({ elem, symbol, selector });
+                  // // Create automatic watcher to clean up any processedElem ref when it is removed from DOM.
+                  // iripo.outWatchers.set(selector, () => {
+                  //   const processedElem = iripo.processedElems.get(elem);
+                  //   debugger;
+                  //   if (processedElem) processedElem.delete(symbol);
+                  // });
+
                   fn(elem);
                 }
               }
@@ -111,6 +122,21 @@ const iripo = (window.iripo = {
     }
   },
   processOutFns: function processOutFns(mutations) {
+    console.log(mutations);
+
+    // Create automatic watcher to clean up any "in" watcher when the node no longer matches.
+    // This allows the "in" watcher to run again if the element changes *back* to being matched
+    // by the "in" selector.
+    iripo.inMatchedElems.forEach((group) => {
+      const { elem, symbol, selector } = group;
+      if (!elem.matches(selector)) {
+        const processedElem = iripo.processedElems.get(elem);
+        debugger;
+        if (processedElem) processedElem.delete(symbol);
+        iripo.inMatchedElems.delete(group);
+      }
+    });
+
     if (this.allMutationsAreInHead(mutations)) return;
 
     if (iripo.outWatchers.size > 0) {
@@ -171,6 +197,7 @@ window.addEventListener(
       document.documentElement || document.body,
       {
         attributes: true,
+        attributeOldValue: true,
         childList: true,
         subtree: true,
       }

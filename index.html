@@ -8,6 +8,7 @@
     <script type="module" src="/src/index.js"></script>
   </head>
   <body>
+    <div class="open">Foo</div>
     <button
       type="button"
       onclick="var p = document.createElement('p'); p.textContent = '1234'; document.getElementById('more').appendChild(p)"
@@ -58,6 +59,10 @@
         });
         iripo.in("[data-button]", function (elem) {
           console.log(elem, "has been added");
+        });
+
+        iripo.in("div.open", function (elem) {
+          console.log(elem, "DIV.open has been added");
         });
 
         window.addNested = addNested;

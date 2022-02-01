@@ -10,9 +10,7 @@ const iripo = (window.iripo = {
   processingQueued: false,
   ignoreMutationsInHead: true,
 
-  inMatchedElems: new Map(),
-  matchers: new Map(),
-  matchedElems: new Map(),
+  outElems: new Map(), // Elements which are observed for changes (out functions)
 
   getSymbol: function getSymbol(fn) {
     const match = Array.from(iripo.allFns.entries()).find(function (entry) {
@@ -107,7 +105,7 @@ const iripo = (window.iripo = {
                   iripo.processedElems.set(elem, set.add(symbol));
 
                   // Keep track of the fact that this element was matched at one point in time.
-                  // iripo.inMatchedElems.add(new Set([elem, symbol, selector]));
+                  // iripo.inoutElems.add(new Set([elem, symbol, selector]));
 
                   fn(elem);
                 }
@@ -126,8 +124,8 @@ const iripo = (window.iripo = {
             // Elem -> selector -> [Syms]
             fnIds.forEach(function (symbol) {
               const matchedSelector =
-                iripo.matchedElems.get(elem) ||
-                iripo.matchedElems.set(elem, new Map([[selector, new Set()]]));
+                iripo.outElems.get(elem) ||
+                iripo.outElems.set(elem, new Map([[selector, new Set()]]));
 
               const fn = iripo.getFn(symbol);
               matchedSelector.get(elem)?.get(selector)?.add(fn);
@@ -138,16 +136,16 @@ const iripo = (window.iripo = {
               //   new Map([[selector, new Set()]]);
               // const fn = iripo.getFn(symbol);
               // // matchedSelector.add(fn);
-              // // iripo.matchedElems.set(elem, matchedSelector);
-              // iripo.matchedElems.get(elem).get(selector).add(fn);
+              // // iripo.outElems.set(elem, matchedSelector);
+              // iripo.outElems.get(elem).get(selector).add(fn);
 
               // const selectorSyms =
-              //   iripo.matchedElems.get(selector) || new Map();
+              //   iripo.outElems.get(selector) || new Map();
               // if (!selectorSyms || !selectorSyms.has(symbol)) {
               //   const fn = iripo.getFn(symbol);
               //   const set = selectorSyms || new Set();
               //   debugger;
-              //   iripo.matchedElems.set(elem, set.add(symbol));
+              //   iripo.outElems.set(elem, set.add(symbol));
               // }
             });
           }
@@ -161,28 +159,28 @@ const iripo = (window.iripo = {
     // Create automatic watcher to clean up any "in" watcher when the node no longer matches.
     // This allows the "in" watcher to run again if the element changes *back* to being matched
     // by the "in" selector.
-    // iripo.inMatchedElems.forEach((group) => {
+    // iripo.inoutElems.forEach((group) => {
     //   const { elem, symbol, selector, fn = undefined } = group;
     //   if (!elem.matches(selector)) {
     //     console.log(elem, selector, elem.matches(selector));
     //     const processedElem = iripo.processedElems.get(elem);
     //     if (processedElem) processedElem.delete(symbol);
-    //     console.log("IN 1", iripo.inMatchedElems.size);
-    //     iripo.inMatchedElems.delete(group);
-    //     console.log("IN 2", iripo.inMatchedElems.size);
+    //     console.log("IN 1", iripo.inoutElems.size);
+    //     iripo.inoutElems.delete(group);
+    //     console.log("IN 2", iripo.inoutElems.size);
 
     //     if (fn) fn(elem);
     //   }
     // });
 
-    Array.from(iripo.matchedElems.entries()).forEach(([elem, selectors]) => {
+    Array.from(iripo.outElems.entries()).forEach(([elem, selectors]) => {
       Array.from(selectors.entries()).forEach(([selector, fns]) => {
         if (!elem.isConnected || !elem.matches(selector)) {
           fns.forEach((fn) => fn(elem));
-          iripo.matchedElems.get(elem).delete(selector);
+          iripo.outElems.get(elem).delete(selector);
         }
-        if (!iripo.matchedElems.get(elem).size) {
-          iripo.matchedElems.delete(elem);
+        if (!iripo.outElems.get(elem).size) {
+          iripo.outElems.delete(elem);
         }
       });
     });

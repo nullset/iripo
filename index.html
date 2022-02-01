@@ -61,8 +61,8 @@
           console.log(elem, "has been added");
         });
 
-        iripo.in("div.open", function (elem) {
-          console.log(elem, "DIV.open has been added");
+        iripo.out("div.open", function (elem) {
+          console.log(elem, "DIV.open has been removed");
         });
 
         window.addNested = addNested;

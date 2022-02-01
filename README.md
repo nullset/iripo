@@ -2,7 +2,7 @@
 
 _(pronounced "ee-ree-po")_
 
-A jquery livequery replacement, built with all the hearty goodness and performance of MutationObserver. Any change to the `<html>` element or any children (`<head>`, `<body>`, or child elements within those nodes) will trigger Iripo. Iripo will only run callback functions when matching elements have appeared or disappeared from the page, and only run when the browser is idle, so as to increase performance.
+A tiny (~1Kb minified, single dependency) jquery livequery replacement, built with all the hearty goodness and performance of MutationObserver. Any change to the `<html>` element or any children (`<head>`, `<body>`, or child elements within those nodes) will trigger Iripo. Iripo will only run callback functions when matching elements have appeared or disappeared from the page, and only run when the browser is idle, so as to increase performance.
 
 **NOTE:** Iripo will intentionally _not_ run when text has been changed on the page, only when actual DOM nodes have been altered.
 
@@ -79,6 +79,8 @@ By default Iripo will ignore any changes which take place in a page's `<head>`. 
 ```javascript
 iripo.ignoreMutationsInHead = false;
 ```
+
+Unless you are using a server-side framework that dynamically swaps in stylesheets, etc. into the `<head>` you probably want this setting to be `true` (the default).
 
 ## Browser support
 

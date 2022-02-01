@@ -1,0 +1,4 @@
+* when the "in" is processed, it is cached. we do this because each function should only be run 1 time per change
+* when the element no longer matches, it is not removed from the processed cache, meaning if the element ever changes *back* to a matching status, its function is not run again.
+
+* we need to track "out" elements as they come in, so that we know when an attribute has changed and they no longer match

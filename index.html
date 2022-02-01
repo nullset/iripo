@@ -39,7 +39,7 @@
           div.appendChild(p);
           document.body.appendChild(div);
         }
-        const blah = iripo.in("p", function (elem) {
+        iripo.in("p", function (elem) {
           elem.dataset.foo = "bar";
         });
         iripo.in("p", function (elem) {
@@ -61,6 +61,9 @@
           console.log(elem, "has been added");
         });
 
+        iripo.in("div.open", function (elem) {
+          console.log(elem, "DIV.open has been added");
+        });
         iripo.out("div.open", function (elem) {
           console.log(elem, "DIV.open has been removed");
         });

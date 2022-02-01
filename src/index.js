@@ -88,6 +88,17 @@ const iripo = (window.iripo = {
     )
       return true;
   },
+  buildOutFn: function buildOutFn({ elem, selector, fn }) {
+    if (iripo.outElems.has(elem)) {
+      if (iripo.outElems.get(elem).has(selector)) {
+        iripo.outElems.get(elem).get(selector).add(fn);
+      } else {
+        iripo.outElems.get(elem).set(selector, new Set([fn]));
+      }
+    } else {
+      iripo.outElems.set(elem, new Map([[selector, new Set([fn])]]));
+    }
+  },
   processInFns: function processInFns(mutations) {
     if (this.allMutationsAreInHead(mutations)) return;
 
@@ -102,10 +113,19 @@ const iripo = (window.iripo = {
                 if (!processedInActions || !processedInActions.has(symbol)) {
                   const fn = iripo.getFn(symbol);
                   const set = processedInActions || new Set();
+
                   iripo.processedElems.set(elem, set.add(symbol));
 
-                  // Keep track of the fact that this element was matched at one point in time.
-                  // iripo.inoutElems.add(new Set([elem, symbol, selector]));
+                  // If the matching element is ever un-matched (ex. a class changes) then
+                  // remove the element from the processedElems set, so that if it is ever
+                  // re-added (ex. class changes back) then it will be run again.
+                  iripo.buildOutFn({
+                    elem,
+                    selector,
+                    fn: () => {
+                      iripo.processedElems.get(elem)?.delete(symbol);
+                    },
+                  });
 
                   fn(elem);
                 }
@@ -121,32 +141,9 @@ const iripo = (window.iripo = {
       document.querySelectorAll(allSelectors).forEach(function (elem) {
         iripo.outWatchers.forEach(function (fnIds, selector) {
           if (elem.matches(selector)) {
-            // Elem -> selector -> [Syms]
             fnIds.forEach(function (symbol) {
-              const matchedSelector =
-                iripo.outElems.get(elem) ||
-                iripo.outElems.set(elem, new Map([[selector, new Set()]]));
-
               const fn = iripo.getFn(symbol);
-              matchedSelector.get(elem)?.get(selector)?.add(fn);
-              // const fns =
-              //   matchedSelector.get(selector) ||
-              //   matchedSelector.set(selector, new Set());
-
-              //   new Map([[selector, new Set()]]);
-              // const fn = iripo.getFn(symbol);
-              // // matchedSelector.add(fn);
-              // // iripo.outElems.set(elem, matchedSelector);
-              // iripo.outElems.get(elem).get(selector).add(fn);
-
-              // const selectorSyms =
-              //   iripo.outElems.get(selector) || new Map();
-              // if (!selectorSyms || !selectorSyms.has(symbol)) {
-              //   const fn = iripo.getFn(symbol);
-              //   const set = selectorSyms || new Set();
-              //   debugger;
-              //   iripo.outElems.set(elem, set.add(symbol));
-              // }
+              iripo.buildOutFn({ elem, selector, fn });
             });
           }
         });
@@ -155,23 +152,6 @@ const iripo = (window.iripo = {
   },
   processOutFns: function processOutFns(mutations) {
     if (this.allMutationsAreInHead(mutations)) return;
-
-    // Create automatic watcher to clean up any "in" watcher when the node no longer matches.
-    // This allows the "in" watcher to run again if the element changes *back* to being matched
-    // by the "in" selector.
-    // iripo.inoutElems.forEach((group) => {
-    //   const { elem, symbol, selector, fn = undefined } = group;
-    //   if (!elem.matches(selector)) {
-    //     console.log(elem, selector, elem.matches(selector));
-    //     const processedElem = iripo.processedElems.get(elem);
-    //     if (processedElem) processedElem.delete(symbol);
-    //     console.log("IN 1", iripo.inoutElems.size);
-    //     iripo.inoutElems.delete(group);
-    //     console.log("IN 2", iripo.inoutElems.size);
-
-    //     if (fn) fn(elem);
-    //   }
-    // });
 
     Array.from(iripo.outElems.entries()).forEach(([elem, selectors]) => {
       Array.from(selectors.entries()).forEach(([selector, fns]) => {
@@ -184,35 +164,6 @@ const iripo = (window.iripo = {
         }
       });
     });
-
-    // if (iripo.outWatchers.size > 0) {
-    //   mutations.forEach(function (mutation) {
-    //     if (mutation.removedNodes.length > 0) {
-    //       iripo.outWatchers.forEach(function (fnIds, selector) {
-    //         mutation.removedNodes.forEach(function (node) {
-    //           if (node.nodeType === 1) {
-    //             const matchingNodes = new Set();
-    //             if (node.matches(selector)) matchingNodes.add(node);
-
-    //             Array.from(node.querySelectorAll(selector)).forEach(function (
-    //               childNode
-    //             ) {
-    //               matchingNodes.add(childNode);
-    //             });
-    //             matchingNodes.forEach(function (node) {
-    //               fnIds.forEach(function (symbol) {
-    //                 if (!iripo.pausedFns.get(symbol)) {
-    //                   const fn = iripo.getFn(symbol);
-    //                   fn(node);
-    //                 }
-    //               });
-    //             });
-    //           }
-    //         });
-    //       });
-    //     }
-    //   });
-    // }
   },
 });
 

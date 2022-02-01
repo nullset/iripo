@@ -11,5 +11,6 @@ export default defineConfig({
       name: "Iripo",
       fileName: (format) => `iripo.${format}.js`,
     },
+    sourcemap: true,
   },
 });

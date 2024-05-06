@@ -72,15 +72,6 @@ A tiny (~1Kb minified, single dependency) jquery livequery replacement, built wi
    iripo.clear("button");
    ```
 
-## Options
-
-By default Iripo will ignore any changes which take place in a page's `<head>`. You can easily change this to observe changes here as well by setting:
-
-```javascript
-iripo.ignoreMutationsInHead = false;
-```
-
-Unless you are using a server-side framework that dynamically swaps in stylesheets, etc. into the `<head>` you probably want this setting to be `true` (the default).
 
 ## Browser support
 

@@ -8,7 +8,6 @@ const iripo = (window.iripo = {
   outWatchers: new Map(),
   processedElems: new WeakMap(),
   processingQueued: false,
-  ignoreMutationsInHead: true,
 
   outElems: new Map(), // Elements which are observed for changes (out functions)
 
@@ -78,16 +77,6 @@ const iripo = (window.iripo = {
     });
     iripo.processInFns();
   },
-  allMutationsAreInHead: function allMutationsAreInHead(mutations) {
-    if (
-      this.ignoreMutationsInHead &&
-      mutations &&
-      mutations.every(function (m) {
-        return m.target.tagName === "HEAD";
-      })
-    )
-      return true;
-  },
   buildOutFn: function buildOutFn({ elem, selector, fn }) {
     if (iripo.outElems.has(elem)) {
       if (iripo.outElems.get(elem).has(selector)) {
@@ -100,8 +89,6 @@ const iripo = (window.iripo = {
     }
   },
   processInFns: function processInFns(mutations) {
-    if (this.allMutationsAreInHead(mutations)) return;
-
     if (iripo.inWatchers.size > 0) {
       const allSelectors = Array.from(iripo.inWatchers.keys()).join(",");
       document.querySelectorAll(allSelectors).forEach(function (elem) {
@@ -151,8 +138,6 @@ const iripo = (window.iripo = {
     }
   },
   processOutFns: function processOutFns(mutations) {
-    if (this.allMutationsAreInHead(mutations)) return;
-
     Array.from(iripo.outElems.entries()).forEach(([elem, selectors]) => {
       Array.from(selectors.entries()).forEach(([selector, fns]) => {
         if (!elem.isConnected || !elem.matches(selector)) {

@@ -8,7 +8,6 @@ const iripo = (window.iripo = {
   inWatchers: new Map(),
   outWatchers: new Map(),
   processedElems: new WeakMap(),
-  processingQueued: false,
   ignoreMutationsInHead: true,
 
   getSymbol: function getSymbol(fn) {
@@ -154,17 +153,21 @@ window.addEventListener('DOMContentLoaded', function handleDOMContentLoaded(
 
   // Watch the page for any mutations. If they occur, requset that the browser run mutations during the next idle period.
   // If the idle period has not yet happened, do nothing, as all mutation functions run once the browser is idle.
+  let queuedMutations = [];
   function watchMutations(mutations) {
-    if (iripo.paused || iripo.processingQueued) return;
-    iripo.processingQueued = true;
+    const hasQueuedMutations = queuedMutations.length > 0;
+    queuedMutations = [...queuedMutations, ...mutations];
+    if (iripo.paused || hasQueuedMutations) {
+      return;
+    }
 
     // Have to use polyfill for Safari since it does not support `requestIdleCallback` natively.
     // FIXME: Once it does, remove the second option specifying the timeout.
     requestIdleCallback(
       function handleRequestIdleCallback() {
-        iripo.processInFns(mutations);
-        iripo.processOutFns(mutations);
-        iripo.processingQueued = false;
+        iripo.processInFns(queuedMutations);
+        iripo.processOutFns(queuedMutations);
+        queuedMutations = [];
       },
       { timeout: 1000 }
     );

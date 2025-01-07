@@ -25,7 +25,14 @@
     "baseUrl": ".",
     "paths": {
       "iripo": ["./src"]
-    }
+    },
+
+    /* Solid.js specific settings */
+    "types": ["vite/client", "solid-js/jsx-runtime"],
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
   },
   "include": ["src", "demo"]
 }

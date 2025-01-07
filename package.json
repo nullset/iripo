@@ -1,0 +1,46 @@
+{
+  "name": "iripo-1",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "A mutation observer based livequery replacement.",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/iripo.umd.cjs",
+  "module": "./dist/iripo.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/iripo.js",
+      "require": "./dist/iripo.umd.cjs"
+    }
+  },
+  "keywords": [
+    "jquery",
+    "mutation",
+    "observer",
+    "livequery"
+  ],
+  "repository": "git@github.com:nullset/iripo.git",
+  "author": "Nathan Wright <nathan@brandalism.com>",
+  "license": "MIT",
+  "dependencies": {
+    "requestidlecallback-polyfill": "^1.0.2"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "solid-js": "^1.9.3",
+    "typescript": "~5.7.2",
+    "uhtml": "^4.7.0",
+    "vite": "^6.0.5",
+    "vite-plugin-dts": "^4.4.0",
+    "vite-plugin-solid": "^2.11.0"
+  }
+}

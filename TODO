@@ -1,0 +1,6 @@
+- when the "in" is processed, it is cached. we do this because each function should only be run 1 time per change
+- when the element no longer matches, it is not removed from the processed cache, meaning if the element ever changes _back_ to a matching status, its function is not run again.
+
+- we need to track "out" elements as they come in, so that we know when an attribute has changed and they no longer match
+
+- Make iripo work with shadowRoot. This will necessitate a global window iripo and then a separate iripo for each shadowRoot.

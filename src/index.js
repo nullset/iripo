@@ -41,6 +41,7 @@ const iripo = (window.iripo = {
     return id;
   },
   out: function outFn(selector, fn) {
+    console.log("outFn set", selector, fn);
     return iripo.setAction(selector, fn, iripo.outWatchers);
   },
   clear: function removeInFn(symbol) {

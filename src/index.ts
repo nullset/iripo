@@ -8,13 +8,30 @@ declare global {
 type Callback = () => void;
 type Watcher = Map<string, Set<symbol>>;
 
-// 2. Define the public API interface
+// The public iripo API interface
 export interface IripoAPI {
   // Add your methods here
   paused: boolean;
+  allFns: Map<symbol, Callback>;
+  pausedFns: Map<symbol, boolean>;
+  inWatchers: Watcher;
+  outWatchers: Watcher;
+  processedElems: WeakMap<Element, Set<symbol>>;
+  processingQueued: boolean;
+  outElems: Map<Element, Map<string, Set<Callback>>>;
+
+  getSymbol(fn: Callback): symbol | undefined;
+  getFn(symbol: symbol): Callback | undefined;
+  setAction(selector: string, fn: Callback, watcherType: Watcher): symbol;
+  in(selector: string, fn: Callback, processNow?: boolean): symbol;
+  out(selector: string, fn: Callback): symbol;
+  clear(symbol: symbol): void;
+  pause(symbol: symbol): symbol;
+  pauseAll(): void;
+  resume(symbol: symbol, processNow?: boolean): symbol;
+  resumeAll(): void;
 }
 
-// 3. Create the implementation
 class Iripo implements IripoAPI {
   private static instance: Iripo | null = null;
 
@@ -252,9 +269,9 @@ class Iripo implements IripoAPI {
   }
 }
 
-// 4. Create and export the singleton instance
+// Create and export the singleton instance
 const instance = Iripo.getInstance();
 
-// 5. Default export is just for module completeness
-// Users should not use this, as it will always reference window.iripo
+// Default export provides the same singleton instance as window.iripo
+// Just offers a more TypeScript-friendly import method
 export default instance;

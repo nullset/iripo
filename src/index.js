@@ -11,9 +11,10 @@ const iripo = (window.iripo = {
 
   outElems: new Map(), // Elements which are observed for changes (out functions)
 
-  getSymbol: function getSymbol(fn) {
-    const match = Array.from(iripo.allFns.entries()).find(function (entry) {
-      if (fn.toString() === entry[1].toString()) {
+  getSymbol: function getSymbol(selector, fn) {
+    // Find the symbol for a function that matches the selector and function body.
+    const match = Array.from(iripo.allFns.entries()).find(([key, value]) => {
+      if (key.description === selector && fn.toString() === value.toString()) {
         return true;
       }
     });
@@ -25,10 +26,10 @@ const iripo = (window.iripo = {
   setAction: function setAction(selector, fn, typeFns) {
     const actions = typeFns.get(selector) || new Set();
 
-    let fnId = iripo.getSymbol(fn);
+    let fnId = iripo.getSymbol(selector, fn);
 
     if (!fnId) {
-      fnId = Symbol();
+      fnId = Symbol(selector);
       iripo.allFns.set(fnId, fn);
       typeFns.set(selector, actions.add(fnId));
     }

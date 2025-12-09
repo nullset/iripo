@@ -2,18 +2,41 @@
 
 ## Completed ✓
 
+### TypeScript Conversion
+- [x] **Convert codebase from JavaScript to TypeScript**
+  - Created `tsconfig.json` with strict type checking enabled
+  - Converted `src/index.js` to `src/index.ts` with full type definitions
+  - Created `src/not-so-weak.d.ts` for dependency types
+  - All methods and callbacks fully typed
+  - Export types: `IripoCallback`, `WatcherMap`, `OutElemsMap`, `Iripo` interface
+  - Extended `Window` interface for `window.iripo`
+  - Size impact: 5.8KB minified ESM (includes not-so-weak)
+  - No breaking changes - fully backward compatible API
+
+- [x] **Switch build system from Vite to Bun**
+  - Updated package.json with Bun build scripts
+  - ESM-only output (no UMD)
+  - Generates TypeScript declarations (.d.ts files)
+  - Source maps for both JS and declarations
+  - Much faster builds with native TypeScript support
+  - Build output:
+    - `dist/index.js`: 5.8KB minified ESM bundle
+    - `dist/index.js.map`: 23KB source map
+    - `dist/index.d.ts`: 1.5KB TypeScript declarations
+    - `dist/index.d.ts.map`: 1.8KB declaration source map
+
 ### Critical Memory Leaks
 - [x] **Issue #1**: `clear()` doesn't remove symbols from `processedElems`
   - Fixed by using WKey (iterable) and cleaning up in clear() method
-  - Location: src/index.js:52-58
+  - Location: src/index.ts:129-135
 
 - [x] **Issue #2**: `clear()` doesn't clean `outElems`
   - Fixed by iterating outElems and removing functions in clear() method
-  - Location: src/index.js:60-73
+  - Location: src/index.ts:137-149
 
 - [x] **Issue #6**: `outElems` uses strong references to DOM elements
   - Fixed by replacing Map with WKey for automatic garbage collection
-  - Location: src/index.js:13
+  - Location: src/index.ts:65
 
 ### Dependencies
 - [x] Add `not-so-weak` dependency for iterable weak collections
@@ -33,10 +56,10 @@
   - Prevents duplicate MutationObservers if imported multiple times
   - Maintains backward compatibility with `window.iripo`
   - Locations:
-    - src/index.js:6 - Reuse existing instance check
-    - src/index.js:228 - window.iripo assignment
-    - src/index.js:231 - Prevent duplicate observer initialization
-    - src/index.js:270 - Default export
+    - src/index.ts:56 - Reuse existing instance check
+    - src/index.ts:307 - window.iripo assignment
+    - src/index.ts:310 - Prevent duplicate observer initialization
+    - src/index.ts:338 - Default export
   - Size impact: ~20 bytes brotli compressed
 
 ---
@@ -58,7 +81,7 @@
   - Added `destroy()` method to disconnect MutationObserver
   - Clears all Maps/Sets
   - Critical for SPAs and component lifecycle management
-  - Location: src/index.js:85-103, observer stored at line 12, 230-231
+  - Location: src/index.ts:162-177, observer stored at line 64, 310
   - Size impact: +60 bytes brotli compressed
 
 - [x] **Issue #5**: Missing error handling in user callbacks
@@ -66,8 +89,8 @@
   - Prevents one broken callback from stopping all processing
   - Errors logged to console with selector context
   - Locations:
-    - src/index.js:166-174 - "in" watcher callbacks in processInFns
-    - src/index.js:203-213 - "out" watcher callbacks in processOutFns
+    - src/index.ts:247-255 - "in" watcher callbacks in processInFns
+    - src/index.ts:286-294 - "out" watcher callbacks in processOutFns
   - Size impact: +50 bytes brotli compressed
 
 ### Medium Priority
@@ -75,7 +98,7 @@
 - [ ] **Performance**: Inefficient selector building
   - Cache selector strings instead of rebuilding on every mutation
   - Invalidate cache when watchers change
-  - Locations: src/index.js:121, 156
+  - Locations: src/index.ts:226, 265
 
 - [x] **Code Quality**: Inconsistent return values
   - Analyzed current pattern: single-symbol methods return symbol, global methods return undefined
@@ -90,17 +113,12 @@
   - Prevents runtime crashes from bad selectors
   - Returns `null` when selector is invalid
   - Locations:
-    - src/index.js:42-50 - validateSelector() function
-    - src/index.js:52 - validation in in()
-    - src/index.js:60 - validation in out()
+    - src/index.ts:97-108 - validateSelector() function
+    - src/index.ts:112 - validation in in()
+    - src/index.ts:121 - validation in out()
   - Size impact: +60 bytes brotli compressed
 
 ### Low Priority
-
-- [ ] **Code Quality**: Update comment at line 1
-  - Says "Required for Safari and IE11 support"
-  - Should be "Required for Safari support" only
-  - Already fixed in import line, but may exist elsewhere
 
 - [ ] **API Design**: No way to query current state
   - Add methods like `isPaused()`, `isPaused(symbol)`, `getWatchers()` etc.
@@ -110,10 +128,6 @@
   - Called on every mutation for all selectors
   - Could be expensive with many selectors/elements
   - Consider more targeted queries or caching strategies
-
-- [ ] **Code Quality**: Add JSDoc or TypeScript definitions
-  - No type information for users
-  - Improves IDE autocomplete and documentation
 
 ---
 
@@ -139,6 +153,9 @@
 
 ## Notes
 
-- Original bundle size: ~1KB brotli compressed
-- Current bundle size: ~1.63KB brotli compressed (ES: 5.08 KiB, UMD: 5.44 KiB)
-- Acceptable tradeoff for memory leak fixes, automatic GC, destroy API, error handling, ES module support, and selector validation
+- Original bundle size: ~1KB brotli compressed (JavaScript)
+- Current bundle size: ~1.7KB brotli compressed, 5.8KB minified uncompressed (TypeScript → ESM)
+- Includes: memory leak fixes, automatic GC, destroy API, error handling, ES module support, selector validation, and full TypeScript type definitions
+- TypeScript benefits: compile-time type safety, better IDE support, self-documenting code
+- Build system: Bun (faster builds, native TypeScript support)
+- Output: ESM-only with TypeScript declarations (.d.ts files)

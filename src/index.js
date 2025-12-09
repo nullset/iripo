@@ -39,13 +39,26 @@ const iripo = window.iripo || {
     }
     return fnId;
   },
+  validateSelector: function validateSelector(selector) {
+    try {
+      document.querySelector(selector);
+      return true;
+    } catch (error) {
+      console.error("iripo: Invalid selector:", selector, error.message);
+      return false;
+    }
+  },
   in: function inFn(selector, fn, processNow) {
+    if (!iripo.validateSelector(selector)) return null;
+
     const id = iripo.setAction(selector, fn, iripo.inWatchers);
     if (processNow) iripo.processInFns();
 
     return id;
   },
   out: function outFn(selector, fn) {
+    if (!iripo.validateSelector(selector)) return null;
+
     return iripo.setAction(selector, fn, iripo.outWatchers);
   },
   clear: function removeInFn(symbol) {

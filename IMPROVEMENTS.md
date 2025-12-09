@@ -77,19 +77,23 @@
   - Invalidate cache when watchers change
   - Locations: src/index.js:121, 156
 
-- [ ] **Code Quality**: Inconsistent return values
-  - `in()` returns symbol
-  - `out()` returns symbol
-  - `pause()` returns symbol
-  - `pauseAll()` returns nothing
-  - `resume()` returns symbol
-  - `resumeAll()` returns nothing
-  - Decision: Make all methods return symbol or undefined consistently
+- [x] **Code Quality**: Inconsistent return values
+  - Analyzed current pattern: single-symbol methods return symbol, global methods return undefined
+  - **Decision:** Keep current pattern - it's logical (symbols returned when you'll use them again)
+  - `clear()` returns nothing because symbol is useless after clearing
+  - No changes needed
 
-- [ ] **Robustness**: No selector validation
-  - Invalid selectors throw errors from querySelectorAll
-  - Add try-catch or validation
-  - Locations: src/index.js:122, 157
+- [x] **Robustness**: Selector validation
+  - Added `validateSelector()` helper function
+  - Validates selectors at registration time (fail fast)
+  - Invalid selectors logged to console and not registered
+  - Prevents runtime crashes from bad selectors
+  - Returns `null` when selector is invalid
+  - Locations:
+    - src/index.js:42-50 - validateSelector() function
+    - src/index.js:52 - validation in in()
+    - src/index.js:60 - validation in out()
+  - Size impact: +60 bytes brotli compressed
 
 ### Low Priority
 
@@ -136,5 +140,5 @@
 ## Notes
 
 - Original bundle size: ~1KB brotli compressed
-- Current bundle size: ~1.57KB brotli compressed (ES: 4.88 KiB, UMD: 5.24 KiB)
-- Acceptable tradeoff for memory leak fixes, automatic GC, destroy API, error handling, and ES module support
+- Current bundle size: ~1.63KB brotli compressed (ES: 5.08 KiB, UMD: 5.44 KiB)
+- Acceptable tradeoff for memory leak fixes, automatic GC, destroy API, error handling, ES module support, and selector validation

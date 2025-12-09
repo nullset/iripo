@@ -1,15 +1,19 @@
-import "requestidlecallback-polyfill"; // NOTE: Required for Safari and IE11 support.
+import "requestidlecallback-polyfill"; // NOTE: Required for Safari support.
+import { WKey } from "not-so-weak";
 
-const iripo = (window.iripo = {
+// ES modules are singletons - this code only executes once per page load
+// Reuse existing window.iripo if it exists (e.g., from a <script> tag)
+const iripo = window.iripo || {
   paused: false, // All mutation functions have been paused at a system level, vs at a function level.
   allFns: new Map(),
   pausedFns: new Map(),
   inWatchers: new Map(),
   outWatchers: new Map(),
-  processedElems: new WeakMap(),
+  processedElems: new WKey(),
   processingQueued: false,
+  observer: null, // MutationObserver instance (set after DOMContentLoaded)
 
-  outElems: new Map(), // Elements which are observed for changes (out functions)
+  outElems: new WKey(), // Elements which are observed for changes (out functions)
 
   getSymbol: function getSymbol(selector, fn) {
     // Find the symbol for a function that matches the selector and function body.
@@ -45,6 +49,33 @@ const iripo = (window.iripo = {
     return iripo.setAction(selector, fn, iripo.outWatchers);
   },
   clear: function removeInFn(symbol) {
+    // Get the function before deleting from allFns (needed for outElems cleanup)
+    const userFn = iripo.allFns.get(symbol);
+
+    // Clean processedElems - remove symbol from all elements
+    iripo.processedElems.forEach(function (symbols, elem) {
+      symbols.delete(symbol);
+      if (symbols.size === 0) {
+        iripo.processedElems.delete(elem);
+      }
+    });
+
+    // Clean outElems - remove user function from all elements
+    if (userFn) {
+      iripo.outElems.forEach(function (selectors, elem) {
+        selectors.forEach(function (fns, selector) {
+          fns.delete(userFn);
+          if (fns.size === 0) {
+            selectors.delete(selector);
+          }
+        });
+        if (selectors.size === 0) {
+          iripo.outElems.delete(elem);
+        }
+      });
+    }
+
+    // Remove from core maps
     iripo.allFns.delete(symbol);
     iripo.pausedFns.delete(symbol);
     [iripo.inWatchers, iripo.outWatchers].forEach(function (typeFns) {
@@ -52,6 +83,25 @@ const iripo = (window.iripo = {
         actions.delete(symbol);
       });
     });
+  },
+  destroy: function destroy() {
+    // Disconnect the MutationObserver to stop watching for changes
+    if (iripo.observer) {
+      iripo.observer.disconnect();
+      iripo.observer = null;
+    }
+
+    // Clear all data structures to free memory
+    iripo.allFns.clear();
+    iripo.pausedFns.clear();
+    iripo.inWatchers.clear();
+    iripo.outWatchers.clear();
+    iripo.processedElems.clear();
+    iripo.outElems.clear();
+
+    // Reset state
+    iripo.paused = false;
+    iripo.processingQueued = false;
   },
   pause: function pause(symbol) {
     iripo.pausedFns.set(symbol, true);
@@ -115,7 +165,15 @@ const iripo = (window.iripo = {
                     },
                   });
 
-                  fn(elem);
+                  try {
+                    fn(elem);
+                  } catch (error) {
+                    console.error(
+                      "Error in iripo 'in' callback for selector:",
+                      selector,
+                      error
+                    );
+                  }
                 }
               }
             });
@@ -139,23 +197,41 @@ const iripo = (window.iripo = {
     }
   },
   processOutFns: function processOutFns(mutations) {
-    Array.from(iripo.outElems.entries()).forEach(([elem, selectors]) => {
-      Array.from(selectors.entries()).forEach(([selector, fns]) => {
+    // WKey automatically GCs disconnected elements, but we still clean up immediately
+    // when elements stop matching selectors for better performance
+    iripo.outElems.forEach(function (selectors, elem) {
+      selectors.forEach(function (fns, selector) {
         if (!elem.isConnected || !elem.matches(selector)) {
-          fns.forEach((fn) => fn(elem));
-          iripo.outElems.get(elem).delete(selector);
-        }
-        if (!iripo.outElems.get(elem).size) {
-          iripo.outElems.delete(elem);
+          fns.forEach((fn) => {
+            try {
+              fn(elem);
+            } catch (error) {
+              console.error(
+                "Error in iripo 'out' callback for selector:",
+                selector,
+                error
+              );
+            }
+          });
+          selectors.delete(selector);
         }
       });
+      // Clean up empty selector maps immediately (WKey will GC the element eventually anyway)
+      if (selectors.size === 0) {
+        iripo.outElems.delete(elem);
+      }
     });
   },
-});
+};
 
-window.addEventListener(
-  "DOMContentLoaded",
-  function handleDOMContentLoaded(event) {
+// Set on window for backward compatibility and global access
+window.iripo = iripo;
+
+// Only initialize observer once (prevents duplicate observers if module is imported multiple times)
+if (!iripo.observer) {
+  window.addEventListener(
+    "DOMContentLoaded",
+    function handleDOMContentLoaded(event) {
     // Run any initial `in` calls.
     if (!iripo.paused) iripo.processInFns();
 
@@ -176,7 +252,8 @@ window.addEventListener(
       );
     }
 
-    new MutationObserver(watchMutations).observe(
+    iripo.observer = new MutationObserver(watchMutations);
+    iripo.observer.observe(
       document.documentElement || document.body,
       {
         attributes: true,
@@ -185,5 +262,9 @@ window.addEventListener(
         subtree: true,
       }
     );
-  }
-);
+    }
+  );
+}
+
+// Export as ES module (for modern import syntax)
+export default iripo;

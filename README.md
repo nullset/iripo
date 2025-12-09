@@ -75,9 +75,9 @@ A tiny (~1Kb minified, single dependency) jquery livequery replacement, built wi
 
 ## Browser support
 
-Iripo works with all modern browsers (Chrome, Firefox, Chromium-based Edge, Opera, Vivaldi, Safari).
+Iripo works with all modern browsers that support `WeakRef` and `FinalizationRegistry` (Chrome 84+, Firefox 79+, Safari 14.1+, Edge 84+, Opera 70+).
 
-Iripo can easily be made to work with Internet Explorer 11 by including [core-js](https://github.com/zloirock/core-js).
+**Note:** Internet Explorer 11 is no longer supported.
 
 ## What's up with the name "Iripo"?
 

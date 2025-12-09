@@ -25,6 +25,7 @@
     "vite": "^2.5.2"
   },
   "dependencies": {
+    "not-so-weak": "^2.0.0",
     "requestidlecallback-polyfill": "^1.0.2"
   },
   "keywords": [

@@ -72,6 +72,32 @@ A (~1Kb minified, single dependency) jquery livequery replacement, built with al
    iripo.clear("button");
    ```
 
+## How Iripo Processes DOM Changes
+
+Iripo uses `requestIdleCallback` to defer processing until the browser is idle, improving performance by avoiding work during critical rendering time.
+
+**Important behavioral notes:**
+
+- **Iripo checks current DOM state, not mutation history.** When the idle callback fires, Iripo runs `querySelectorAll` to see what currently matches selectors. It does not process individual mutation records.
+
+- **Rapid DOM changes may not retrigger callbacks.** If an element is removed and re-added to the DOM before the idle callback fires, Iripo will see it as "never left" and the `in()` callback will not run again.
+
+  ```javascript
+  // Example: Element moved through a DocumentFragment
+  const div = document.createElement('div');
+  div.className = 'test';
+  document.body.appendChild(div);  // Callback runs
+
+  const fragment = document.createDocumentFragment();
+  fragment.appendChild(div);       // Remove from DOM
+  document.body.appendChild(div);   // Re-add to DOM
+  // If this happens before idle callback: callback does NOT run again
+  ```
+
+- **Elements maintain their identity.** If an element is removed from the DOM (including moved to a DocumentFragment where `elem.isConnected` is `false`) and the idle callback fires, the `out()` callback will run. When the element is re-added later, the `in()` callback will run again because cleanup has already occurred.
+
+- **Performance tradeoff:** This approach (one `querySelectorAll` vs. processing individual mutations) is much faster when you have many selectors or frequent DOM changes, but means you observe "current state" rather than "all state changes."
+
 ## Browser support
 
 Iripo works with all modern browsers that support `WeakRef` and `FinalizationRegistry` (Chrome 84+, Firefox 79+, Safari 14.1+, Edge 84+, Opera 70+).

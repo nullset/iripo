@@ -10,6 +10,7 @@ export interface Iripo {
   // State
   paused: boolean;
   processingQueued: boolean;
+  pendingIdleCallback: number | null;
   observer: MutationObserver | null;
 
   // Data structures
@@ -61,6 +62,7 @@ const iripo: Iripo = (window.iripo as Iripo) || {
   outWatchers: new Map<string, Set<symbol>>(),
   processedElems: new WKey<Element, Set<symbol>>(),
   processingQueued: false,
+  pendingIdleCallback: null,
   observer: null,
   outElems: new WKey<Element, OutElemsMap>(),
 
@@ -151,13 +153,23 @@ const iripo: Iripo = (window.iripo as Iripo) || {
     iripo.allFns.delete(symbol);
     iripo.pausedFns.delete(symbol);
     [iripo.inWatchers, iripo.outWatchers].forEach((typeFns: WatcherMap) => {
-      typeFns.forEach((actions: Set<symbol>) => {
+      typeFns.forEach((actions: Set<symbol>, selector: string) => {
         actions.delete(symbol);
+        // Remove empty Sets to prevent memory leak
+        if (actions.size === 0) {
+          typeFns.delete(selector);
+        }
       });
     });
   },
 
   destroy(): void {
+    // Cancel pending idle callback to prevent execution after cleanup
+    if (iripo.pendingIdleCallback !== null) {
+      cancelIdleCallback(iripo.pendingIdleCallback);
+      iripo.pendingIdleCallback = null;
+    }
+
     if (iripo.observer) {
       iripo.observer.disconnect();
       iripo.observer = null;
@@ -238,7 +250,14 @@ const iripo: Iripo = (window.iripo as Iripo) || {
                     elem,
                     selector,
                     fn: () => {
-                      iripo.processedElems.get(elem)?.delete(symbol);
+                      const set = iripo.processedElems.get(elem);
+                      if (set) {
+                        set.delete(symbol);
+                        // Remove empty Sets to prevent memory leak
+                        if (set.size === 0) {
+                          iripo.processedElems.delete(elem);
+                        }
+                      }
                     },
                   });
 
@@ -304,33 +323,42 @@ const iripo: Iripo = (window.iripo as Iripo) || {
 // Set on window for backward compatibility and global access
 window.iripo = iripo;
 
-// Only initialize observer once
-if (!iripo.observer) {
-  window.addEventListener("DOMContentLoaded", () => {
-    if (!iripo.paused) iripo.processInFns();
+// Observer initialization function (can be called after destroy)
+const initializeObserver = () => {
+  if (iripo.observer) return; // Already initialized
 
-    const watchMutations = (mutations: MutationRecord[]) => {
-      if (iripo.paused || iripo.processingQueued) return;
-      iripo.processingQueued = true;
+  if (!iripo.paused) iripo.processInFns();
 
-      requestIdleCallback(
-        () => {
-          iripo.processInFns(mutations);
-          iripo.processOutFns(mutations);
-          iripo.processingQueued = false;
-        },
-        { timeout: 1000 }
-      );
-    };
+  const watchMutations = (mutations: MutationRecord[]) => {
+    if (iripo.paused || iripo.processingQueued) return;
+    iripo.processingQueued = true;
 
-    iripo.observer = new MutationObserver(watchMutations);
-    iripo.observer.observe(document.documentElement || document.body, {
-      attributes: true,
-      attributeOldValue: true,
-      childList: true,
-      subtree: true,
-    });
+    iripo.pendingIdleCallback = requestIdleCallback(
+      () => {
+        iripo.processInFns(mutations);
+        iripo.processOutFns(mutations);
+        iripo.processingQueued = false;
+        iripo.pendingIdleCallback = null;
+      },
+      { timeout: 1000 }
+    );
+  };
+
+  iripo.observer = new MutationObserver(watchMutations);
+  iripo.observer.observe(document.documentElement || document.body, {
+    attributes: true,
+    attributeOldValue: true,
+    childList: true,
+    subtree: true,
   });
+};
+
+// Initialize immediately if DOM is ready, otherwise wait for DOMContentLoaded
+if (document.readyState === 'loading') {
+  window.addEventListener('DOMContentLoaded', initializeObserver);
+} else {
+  initializeObserver();
 }
 
 export default iripo;
+export { initializeObserver };

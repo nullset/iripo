@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iripo Tests</title>
+</head>
+<body>
+  <div id="test-container"></div>
+
+  <script type="module">
+    // Import iripo
+    import iripo from '/iripo.js';
+
+    // Make it available globally for tests
+    window.iripo = iripo;
+
+    // Signal that iripo is ready
+    window.iripoReady = true;
+  </script>
+</body>
+</html>

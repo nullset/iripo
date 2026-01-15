@@ -20,9 +20,14 @@
   "license": "MIT",
   "scripts": {
     "build": "rm -rf dist && bun build src/index.ts --outdir dist --target browser --minify --sourcemap=external && tsc --emitDeclarationOnly",
-    "prepublishOnly": "bun run build"
+    "prepublishOnly": "bun run build",
+    "test": "playwright test",
+    "test:server": "bun run tests/server.ts",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug"
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "typescript": "^5.0.0"
   },
   "dependencies": {

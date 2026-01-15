@@ -2,7 +2,7 @@
 
 _(pronounced "ee-ree-po")_
 
-A tiny (~1Kb minified, single dependency) jquery livequery replacement, built with all the hearty goodness and performance of MutationObserver. Any change to the `<html>` element or any children (`<head>`, `<body>`, or child elements within those nodes) will trigger Iripo. Iripo will only run callback functions when matching elements have appeared or disappeared from the page, and only run when the browser is idle, so as to increase performance.
+A (~1Kb minified, single dependency) jquery livequery replacement, built with all the hearty goodness and performance of MutationObserver. Any change to the `<html>` element or any children (`<head>`, `<body>`, or child elements within those nodes) will trigger Iripo. Iripo will only run callback functions when matching elements have appeared or disappeared from the page, and only run when the browser is idle, so as to increase performance.
 
 **NOTE:** Iripo will intentionally _not_ run when text has been changed on the page, only when actual DOM nodes have been altered.
 
@@ -71,7 +71,6 @@ A tiny (~1Kb minified, single dependency) jquery livequery replacement, built wi
    ```javascript
    iripo.clear("button");
    ```
-
 
 ## Browser support
 

@@ -11,6 +11,7 @@ export interface Iripo {
   paused: boolean;
   processingQueued: boolean;
   pendingIdleCallback: number | null;
+  domContentLoadedAdded: boolean;
   observer: MutationObserver | null;
 
   // Data structures
@@ -63,6 +64,7 @@ const iripo: Iripo = (window.iripo as Iripo) || {
   processedElems: new WKey<Element, Set<symbol>>(),
   processingQueued: false,
   pendingIdleCallback: null,
+  domContentLoadedAdded: false,
   observer: null,
   outElems: new WKey<Element, OutElemsMap>(),
 
@@ -168,6 +170,12 @@ const iripo: Iripo = (window.iripo as Iripo) || {
     if (iripo.pendingIdleCallback !== null) {
       cancelIdleCallback(iripo.pendingIdleCallback);
       iripo.pendingIdleCallback = null;
+    }
+
+    // Remove DOMContentLoaded listener if we added it
+    if (iripo.domContentLoadedAdded) {
+      window.removeEventListener('DOMContentLoaded', initializeObserver);
+      iripo.domContentLoadedAdded = false;
     }
 
     if (iripo.observer) {
@@ -356,6 +364,7 @@ const initializeObserver = () => {
 // Initialize immediately if DOM is ready, otherwise wait for DOMContentLoaded
 if (document.readyState === 'loading') {
   window.addEventListener('DOMContentLoaded', initializeObserver);
+  iripo.domContentLoadedAdded = true;
 } else {
   initializeObserver();
 }

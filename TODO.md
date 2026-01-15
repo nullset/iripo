@@ -35,11 +35,10 @@
    - **Design**: Global `paused` is a performance optimization to skip ALL processing when everything is paused
    - **Verdict**: Working as designed
 
-6. **No cleanup of event listeners** (index.ts:337-341)
+6. **No cleanup of event listeners** ✅ FIXED
    - **Issue**: DOMContentLoaded listener is never removed, even after destroy()
    - **Impact**: Minor memory leak, listener persists even if iripo is destroyed
-   - **Location**: Observer initialization
-   - **Fix**: Store listener reference and remove in destroy()
+   - **Fix Applied**: Added `domContentLoadedAdded` flag to track if listener was added, removed in `destroy()`
 
 ## Performance Issues
 
@@ -104,9 +103,20 @@
     - Large DOM performance benchmarks
     - TypeScript type checking in consumer projects
 
-## Questions to Resolve
+## Summary of Changes Made
+
+### Memory Leak Fixes ✅
+1. **Empty Sets in watcher Maps** - `clear()` now removes empty Sets from `inWatchers`/`outWatchers` after deleting last symbol
+2. **Empty Sets in processedElems** - Cleanup functions now remove empty Sets after deleting last symbol
+3. **destroy() race condition** - Added `pendingIdleCallback` tracking and cancellation in `destroy()`
+4. **DOMContentLoaded listener cleanup** - Added `domContentLoadedAdded` flag to track and remove listener in `destroy()`
+
+### Understanding WKey Behavior
+- WKey from `not-so-weak` uses FinalizationRegistry to auto-cleanup when **keys** (DOM elements) are GC'd
+- Does NOT prevent empty Sets as **values** when elements stay in DOM
+- Regular Maps (inWatchers/outWatchers) have NO auto-cleanup since keys are strings
+
+### Remaining Questions
 
 - Should `getSymbol` even exist? Is function deduplication necessary, or should users store symbols themselves?
-- Should `resume(symbol)` affect global `paused` state?
 - Do we need to support destroy/reinitialize cycles?
-- What's the expected behavior for pause/resume of individual functions vs system-wide?
